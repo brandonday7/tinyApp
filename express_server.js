@@ -41,6 +41,9 @@ app.post("/urls", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
+  if (!urlDatabase[req.params.shortURL]) {
+    res.send("That short URL does not exist!");
+  }
   let longURL = urlDatabase[req.params.shortURL];
   res.redirect(longURL);
 });
@@ -52,6 +55,9 @@ app.get('/urls', (req, res) => {
 
 
 app.get('/urls/:id', (req, res) => {
+  if (!urlDatabase[req.params.id]) {
+    res.send("That short URL does not exist!");
+  }
   let shortURL = req.params.id;
   let fullURL = urlDatabase[shortURL];
   let templateVars = {shortURL, fullURL};
