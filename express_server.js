@@ -65,6 +65,13 @@ app.get('/urls/:id', (req, res) => {
 });
 
 
+app.post('/urls/:id/delete', (req, res) => {
+  let deleteKey = req.params.id;
+  delete urlDatabase[deleteKey];
+  res.redirect('http://localhost:8080/urls');
+});
+
+
 app.listen(PORT, () => {
   console.log(`Example listening on port ${PORT}`);
 });
