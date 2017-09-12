@@ -24,35 +24,11 @@ app.get('/hello', (req, res) => {
   res.end("<html><body>Hello <b>World</b></body></html>\n");
 });
 
+
+//**********************************************
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
-
-app.post("/urls", (req, res) => {
-  let newKey = generateRandomString();
-  while (newKey === false) {
-    generateRandomString();
-  }
-  urlDatabase[newKey] = req.body.longURL;
-  console.log(urlDatabase);
-
-  res.redirect(`http://localhost:8080/urls/${newKey}`);
-
-});
-
-app.get("/u/:shortURL", (req, res) => {
-  if (!urlDatabase[req.params.shortURL]) {
-    res.send("That short URL does not exist!");
-  }
-  let longURL = urlDatabase[req.params.shortURL];
-  res.redirect(longURL);
-});
-
-app.get('/urls', (req, res) => {
-  let templateVars = {urls: urlDatabase};
-  res.render('urls_index', templateVars);
-});
-
 
 app.get('/urls/:id', (req, res) => {
   if (!urlDatabase[req.params.id]) {
@@ -64,11 +40,44 @@ app.get('/urls/:id', (req, res) => {
   res.render('urls_show', templateVars);
 });
 
+app.get('/urls', (req, res) => {
+  let templateVars = {urls: urlDatabase};
+  res.render('urls_index', templateVars);
+});
 
+
+//***********************************************
+app.get("/u/:shortURL", (req, res) => {
+  if (!urlDatabase[req.params.shortURL]) {
+    res.send("That short URL does not exist!");
+  }
+  let longURL = urlDatabase[req.params.shortURL];
+  res.redirect(longURL);
+});
+
+
+//***********************************************
 app.post('/urls/:id/delete', (req, res) => {
   let deleteKey = req.params.id;
   delete urlDatabase[deleteKey];
   res.redirect('http://localhost:8080/urls');
+});
+
+app.post('/urls/:id', (req, res) => {
+  urlDatabase[req.params.id] = req.body.newURL;
+  res.redirect('http://localhost:8080/urls');
+})
+
+app.post("/urls", (req, res) => {
+  let newKey = generateRandomString();
+  while (newKey === false) {
+    generateRandomString();
+  }
+  urlDatabase[newKey] = req.body.longURL;
+  console.log(urlDatabase);
+
+  res.redirect(`http://localhost:8080/urls/${newKey}`);
+
 });
 
 

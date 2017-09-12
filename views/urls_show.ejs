@@ -5,7 +5,11 @@
 </head>
 <body>
   <h1>
-    <%= shortURL %> : <%= fullURL; %>
+    <form method="POST" action="/urls/<%=shortURL %>">
+      <%= shortURL %> : <%= fullURL; %>
+      <input id="newURL" type="text" name="newURL" placeholder="http://" style="width: 300px">
+      <button>Update</button>
+    </form>
   </h1>
   <a href="deadLink">Shorten URL</a>
 </body>
