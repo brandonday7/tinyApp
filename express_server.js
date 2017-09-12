@@ -29,7 +29,6 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  res.send("Ok");
   let newKey = generateRandomString();
   while (newKey === false) {
     generateRandomString();
@@ -37,6 +36,13 @@ app.post("/urls", (req, res) => {
   urlDatabase[newKey] = req.body.longURL;
   console.log(urlDatabase);
 
+  res.redirect(`http://localhost:8080/urls/${newKey}`);
+
+});
+
+app.get("/u/:shortURL", (req, res) => {
+  let longURL = urlDatabase[req.params.shortURL];
+  res.redirect(longURL);
 });
 
 app.get('/urls', (req, res) => {
