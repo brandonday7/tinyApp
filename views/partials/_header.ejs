@@ -1,1 +1,11 @@
-<h1>This is a header</h1>
+<form action="/login" method="POST">
+  <% if (username !== 'undefined') { %>
+    <h2><%= username; %></h2>
+    <form action="/logout" method="POST">
+      <button>Logout</button>
+    </form>
+  <% } else { %>
+    <input id="username" type="text" name="username" placeholder="Username">
+    <button>Submit</button>
+  <% } %>
+</form>
