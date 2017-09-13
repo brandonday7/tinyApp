@@ -1,6 +1,6 @@
 <h3>TinyURL Application</h3>
 <form action="/logout" method="POST">
-  <% if (user_ID !== undefined) { %>
+  <% if (typeof(user_ID) !== 'undefined') { %>
     <h4>Signed in as: <%= user_ID.email; %></h4>
     <button>Logout</button>
   <% } else { %>

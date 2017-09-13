@@ -10,8 +10,8 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
 
 let urlDatabase = {
-  "b2xvn2": "http://www.lighthouselabs.ca",
-  "9sm5xk": "http://www.google.com"
+  'b2xvn2': {link: 'http://www.lighthouselabs.ca', user_ID: 'abcdef'},
+  '9sm5xk': {link: 'http://www.google.com', user_ID: '123456'}
 };
 
 const users = {
@@ -31,19 +31,24 @@ app.get('/', (req, res) => {
   res.end("Hello!");
 });
 
-app.get('/urls.json', (req, res) => {
-  res.json(urlDatabase);
-});
+// app.get('/urls.json', (req, res) => {
+//   res.json(urlDatabase);
+// });
 
-app.get('/hello', (req, res) => {
-  res.end("<html><body>Hello <b>World</b></body></html>\n");
-});
+// app.get('/hello', (req, res) => {
+//   res.end("<html><body>Hello <b>World</b></body></html>\n");
+// });
 
 
 //**********************************************
 app.get("/urls/new", (req, res) => {
-  let templateVars = {user_ID: req.cookies.user_ID}
-  res.render("urls_new", templateVars);
+  let loggedIn = req.cookies.user_ID;
+  if (loggedIn) {
+    let templateVars = {user_ID: req.cookies.user_ID}
+    res.render("urls_new", templateVars);
+  } else {
+    res.render('login');
+  }
 });
 
 app.get('/urls/:id', (req, res) => {
@@ -52,13 +57,13 @@ app.get('/urls/:id', (req, res) => {
     return;
   }
   let shortURL = req.params.id;
-  let fullURL = urlDatabase[shortURL];
+  let fullURL = urlDatabase[shortURL].link;
   let templateVars = {shortURL, fullURL, user_ID: req.cookies.user_ID};
   res.render('urls_show', templateVars);
 });
 
 app.get('/urls', (req, res) => {
-  let templateVars = {urls: urlDatabase, user_ID: req.cookies.user_ID};
+  let templateVars = {urlDatabase: urlDatabase, user_ID: req.cookies.user_ID}; //root of delete problem is here
   res.render('urls_index', templateVars);
 });
 
@@ -69,7 +74,7 @@ app.get("/u/:shortURL", (req, res) => {
   if (!urlDatabase[req.params.shortURL]) {
     res.send("That short URL does not exist!");
   }
-  let longURL = urlDatabase[req.params.shortURL];
+  let longURL = urlDatabase[req.params.shortURL].link;
   res.redirect(longURL);
 });
 
@@ -85,22 +90,31 @@ app.get('/login', (req, res) => {
 
 //***********************************************
 app.post('/urls/:id/delete', (req, res) => {
+  let errorMessage = undefined;
   let deleteKey = req.params.id;
+  if (urlDatabase[deleteKey].user_ID === req.cookies.user_ID) {
   delete urlDatabase[deleteKey];
   res.redirect('http://localhost:8080/urls');
+  }
+  else {
+    errorMessage = "Your account is not able to perform that function!";
+    let templateVars = {errorMessage}
+    res.render('urls_index', templateVars);
+  }
 });
 
 app.post('/urls/:id', (req, res) => {
-  urlDatabase[req.params.id] = req.body.newURL;
+  urlDatabase[req.params.id].link = req.body.newURL;
   res.redirect('http://localhost:8080/urls');
 })
 
-app.post("/urls", (req, res) => {
+app.post("/urls", (req, res) => { //this has not been tested since we added user_ID to each link, but in theory it should work
   let newKey = generateRandomString();
   while (newKey === false) {
     generateRandomString();
   }
-  urlDatabase[newKey] = req.body.longURL;
+  let newDataObj = {link: req.body.longURL, user_ID: req.cookies.user_ID.id};
+  urlDatabase[newKey] = newDataObj;
   console.log(urlDatabase);
 
   res.redirect(`http://localhost:8080/urls/${newKey}`);
@@ -108,6 +122,7 @@ app.post("/urls", (req, res) => {
 });
 
 app.post('/login', (req, res) => {
+  let errorMessage = undefined;
   let email = req.body.user_email;
   let user_ID = findUserID(email);
   let password = req.body.user_password;

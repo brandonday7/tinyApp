@@ -4,14 +4,17 @@
   <% include ./partials/_header.ejs %>
 </head>
 <body>
-  <h1>
-    <% for (key in urls) { %>
-      <li><%= key %> : <%= urls[key]; %></li>
+  <% if (typeof(errorMessage) !== 'undefined') { %>
+    <script>alert(errorMessage);</script>
+  <% } %>
+  <h3>
+    <% for (key in urlDatabase) { %>
+      <li><%= key %> : <%= urlDatabase[key].link; %></li>
       <form method="POST" action="/urls/<%= key %>/delete">
         <a href="http://localhost:8080/urls/<%= key %>">Edit</a>
         <button>Delete</button>
       </form>
     <% } %>
-  </h1>
+  </h3>
   <a href="deadLink">Shorten URL</a>
 </body>
