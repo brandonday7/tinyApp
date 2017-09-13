@@ -14,6 +14,19 @@ let urlDatabase = { //my browser is setting the key to lowercase automatically, 
   "9sm5xk": "http://www.google.com"
 };
 
+const users = {
+  "abcdef": {
+    id: "abcdef",
+    email: "brandontday7@gmail.com",
+    password: "bigfatpassword"
+  },
+ "123456": {
+    id: "123456",
+    email: "frankocean@wolfgang.com",
+    password: "whiteferrari"
+  }
+}
+
 app.get('/', (req, res) => {
   res.end("Hello!");
 });
@@ -29,24 +42,26 @@ app.get('/hello', (req, res) => {
 
 //**********************************************
 app.get("/urls/new", (req, res) => {
-  let templateVars = {username: req.cookies.username}
+  let templateVars = {user_ID: req.cookies.user_ID}
   res.render("urls_new", templateVars);
 });
 
 app.get('/urls/:id', (req, res) => {
   if (!urlDatabase[req.params.id]) {
     res.send("That short URL does not exist!");
+    return;
   }
   let shortURL = req.params.id;
   let fullURL = urlDatabase[shortURL];
-  let templateVars = {shortURL, fullURL, username: req.cookies.username};
+  let templateVars = {shortURL, fullURL, user_ID: req.cookies.user_ID};
   res.render('urls_show', templateVars);
 });
 
 app.get('/urls', (req, res) => {
-  let templateVars = {urls: urlDatabase, username: req.cookies.username};
+  let templateVars = {urls: urlDatabase, user_ID: req.cookies.user_ID};
   res.render('urls_index', templateVars);
 });
+
 
 
 //***********************************************
@@ -58,6 +73,10 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
+app.get('/register', (req, res) => {
+  let errorMessage = undefined;
+  res.render('register', {errorMessage: errorMessage});
+});
 
 //***********************************************
 app.post('/urls/:id/delete', (req, res) => {
@@ -84,14 +103,43 @@ app.post("/urls", (req, res) => {
 });
 
 app.post('/login', (req, res) => {
-  let username = req.body.username;
-  res.cookie('username', username);
+  let email = req.body.user_email;
+  let user_ID = findUserID(email);
+  res.cookie('user_ID', users[user_ID]);
   res.redirect('http://localhost:8080/urls');
-})
+});
 
 app.post('/logout', (req, res) => {
-  res.clearCookie('username');
+  res.clearCookie('user_ID');
   res.redirect('http://localhost:8080/urls');
+});
+
+app.post('/register', (req, res) => {
+  let errorMessage = undefined;
+  for (member in users) {
+    if (users[member].email === req.body.email) {
+      res.status(400);
+      errorMessage = "That email is already taken. Please use another";
+      res.render('register', {errorMessage: errorMessage});
+      return;
+    }
+  }
+
+
+  if (req.body.email === '' || req.body.password === '') {
+    res.status(400);
+    errorMessage = "Please input a valid email and password";
+    res.render('register', {errorMessage: errorMessage});
+  } else {
+  let newID = generateRandomString();
+  while (newID === false) {
+    generateRandomString();
+  }
+  let newUser = {id: newID, email: req.body.email, password: req.body.password};
+  users[newID] = newUser;
+  res.cookie('user_ID', users[newID]);
+  res.redirect('http://localhost:8080/urls');
+}
 })
 
 
@@ -111,10 +159,21 @@ function generateRandomString() {
   }
   alphaNumer = alphaNumer.join('');
 
-  if (!urlDatabase[alphaNumer]) {
+  if (!urlDatabase[alphaNumer] && !users[alphaNumer]) {
     return alphaNumer;
   } else {
     return false;
   }
+}
+
+
+
+function findUserID(email) {
+  for (member in users) {
+    if (users[member].email === email) {
+      return users[member].id;
+    }
+  }
+  return 0;
 }
 

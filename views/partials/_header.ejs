@@ -1,11 +1,11 @@
 <form action="/login" method="POST">
-  <% if (username !== 'undefined') { %>
-    <h2><%= username; %></h2>
+  <% if (user_ID !== 'undefined') { %>
+    <h2><%= user_ID.email; %></h2>
     <form action="/logout" method="POST">
       <button>Logout</button>
     </form>
   <% } else { %>
-    <input id="username" type="text" name="username" placeholder="Username">
-    <button>Submit</button>
+    <input id="user_email" type="text" name="user_email" placeholder="User Email">
+    <button>Login</button>
   <% } %>
 </form>
