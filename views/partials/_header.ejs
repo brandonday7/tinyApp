@@ -1,11 +1,11 @@
-<form action="/login" method="POST">
-  <% if (user_ID !== 'undefined') { %>
-    <h2><%= user_ID.email; %></h2>
-    <form action="/logout" method="POST">
-      <button>Logout</button>
-    </form>
+<h3>TinyURL Application</h3>
+<form action="/logout" method="POST">
+  <% if (user_ID !== undefined) { %>
+    <h4>Signed in as: <%= user_ID.email; %></h4>
+    <button>Logout</button>
   <% } else { %>
-    <input id="user_email" type="text" name="user_email" placeholder="User Email">
-    <button>Login</button>
+  <h4>Not logged in</h4>
+  <p>Login <a href="./login">here</a></p>
+  <p>Not a member? Register <a href="./register">here</a></p>
   <% } %>
 </form>

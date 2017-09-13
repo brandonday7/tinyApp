@@ -9,7 +9,7 @@ let PORT = process.env.PORT || 8080;
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
 
-let urlDatabase = { //my browser is setting the key to lowercase automatically, and i don't know why, so all shortURLs must be lowercase only
+let urlDatabase = {
   "b2xvn2": "http://www.lighthouselabs.ca",
   "9sm5xk": "http://www.google.com"
 };
@@ -78,6 +78,11 @@ app.get('/register', (req, res) => {
   res.render('register', {errorMessage: errorMessage});
 });
 
+app.get('/login', (req, res) => {
+  let errorMessage = undefined;
+  res.render('login', {errorMessage: errorMessage});
+});
+
 //***********************************************
 app.post('/urls/:id/delete', (req, res) => {
   let deleteKey = req.params.id;
@@ -105,13 +110,20 @@ app.post("/urls", (req, res) => {
 app.post('/login', (req, res) => {
   let email = req.body.user_email;
   let user_ID = findUserID(email);
+  let password = req.body.user_password;
+  if ((user_ID === 0) || (users[user_ID].password !== password)) {
+    res.status(403);
+    let errorMessage = "Invalid login information. Please try again";
+    res.render('login', {errorMessage: errorMessage});
+    return;
+  }
   res.cookie('user_ID', users[user_ID]);
-  res.redirect('http://localhost:8080/urls');
+  res.redirect('http://localhost:8080/');
 });
 
 app.post('/logout', (req, res) => {
   res.clearCookie('user_ID');
-  res.redirect('http://localhost:8080/urls');
+  res.redirect('http://localhost:8080/login');
 });
 
 app.post('/register', (req, res) => {
