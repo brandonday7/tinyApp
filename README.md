@@ -4,8 +4,8 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 ## Final Product
 
-["Users can add as many URLs as they'd to shorten."](https://github.com/brandonday7/tinyApp/blob/master/docs/:urlPage.png?raw=true)
-["Users can login using the default accounts or create their own to use during the session"](https://github.com/brandonday7/tinyApp/blob/master/docs/:loginPage.png?raw=true)
+!["Users can login using the default accounts or create their own to use during the session"](https://github.com/brandonday7/tinyApp/blob/master/docs/:loginPage.png?raw=true)
+!["Users can add as many URLs as they'd to shorten."](https://github.com/brandonday7/tinyApp/blob/master/docs/:urlPage.png?raw=true)
 
 
 ## Dependencies
