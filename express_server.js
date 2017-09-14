@@ -27,6 +27,8 @@ const users = {
   }
 }
 
+let errorMessage = undefined;
+
 app.get('/', (req, res) => {
   res.end("Hello!");
 });
@@ -79,26 +81,23 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.get('/register', (req, res) => {
-  let errorMessage = undefined;
   res.render('register', {errorMessage: errorMessage});
 });
 
 app.get('/login', (req, res) => {
-  let errorMessage = undefined;
   res.render('login', {errorMessage: errorMessage});
 });
 
 //***********************************************
 app.post('/urls/:id/delete', (req, res) => {
-  let errorMessage = undefined;
   let deleteKey = req.params.id;
-  if (urlDatabase[deleteKey].user_ID === req.cookies.user_ID) {
-  delete urlDatabase[deleteKey];
-  res.redirect('http://localhost:8080/urls');
+  if (urlDatabase[deleteKey].user_ID === req.cookies.user_ID.id) {
+    delete urlDatabase[deleteKey];
+    res.redirect('/urls');
   }
   else {
-    errorMessage = "Your account is not able to perform that function!";
-    let templateVars = {errorMessage}
+    errorMessage = "You may only delete links that you have added!";
+    let templateVars = {errorMessage, urlDatabase, user_ID: req.cookies.user_ID}
     res.render('urls_index', templateVars);
   }
 });
@@ -108,7 +107,7 @@ app.post('/urls/:id', (req, res) => {
   res.redirect('http://localhost:8080/urls');
 })
 
-app.post("/urls", (req, res) => { //this has not been tested since we added user_ID to each link, but in theory it should work
+app.post("/urls", (req, res) => {
   let newKey = generateRandomString();
   while (newKey === false) {
     generateRandomString();
@@ -122,7 +121,6 @@ app.post("/urls", (req, res) => { //this has not been tested since we added user
 });
 
 app.post('/login', (req, res) => {
-  let errorMessage = undefined;
   let email = req.body.user_email;
   let user_ID = findUserID(email);
   let password = req.body.user_password;
@@ -142,7 +140,6 @@ app.post('/logout', (req, res) => {
 });
 
 app.post('/register', (req, res) => {
-  let errorMessage = undefined;
   for (member in users) {
     if (users[member].email === req.body.email) {
       res.status(400);
