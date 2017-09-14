@@ -59,13 +59,18 @@ app.get('/urls/:id', (req, res) => {
     return;
   }
   let shortURL = req.params.id;
+  if (req.cookies.user_ID.id !== urlDatabase[shortURL]['user_ID']) {
+    res.redirect('/urls');
+    return;
+  }
+
   let fullURL = urlDatabase[shortURL].link;
   let templateVars = {shortURL, fullURL, user_ID: req.cookies.user_ID};
   res.render('urls_show', templateVars);
 });
 
 app.get('/urls', (req, res) => {
-  let templateVars = {urlDatabase: urlDatabase, user_ID: req.cookies.user_ID}; //root of delete problem is here
+  let templateVars = {urlDatabase: urlDatabase, user_ID: req.cookies.user_ID};
   res.render('urls_index', templateVars);
 });
 
