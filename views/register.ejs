@@ -1,0 +1,10 @@
+<h3>Reigster Today!</h3>
+<form action="/register" method="POST"> <!-- input registration info -->
+  <input name="email" type="email" placeholder="email@email.com">
+  <input name="password" type="password" placeholder="password">
+  <button>Submit</button>
+</form>
+<% if (typeof(errorMessage) !== 'undefined') { %> <!-- display error message, if any -->
+  <h3><%= errorMessage %></h3>
+  <% errorMessage = undefined; %>
+<% } %>
