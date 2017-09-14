@@ -1,8 +1,12 @@
 let express = require('express');
 let app = express();
 const bodyParser = require('body-parser');
-let cookieParser = require('cookie-parser');
-app.use(cookieParser());
+let cookieSession = require('cookie-session');
+app.use(cookieSession({
+  name: 'session',
+  keys: ['user_ID']
+}));
+const bcrypt = require('bcrypt');
 
 let PORT = process.env.PORT || 8080;
 
@@ -18,12 +22,12 @@ const users = {
   "abcdef": {
     id: "abcdef",
     email: "brandontday7@gmail.com",
-    password: "bigfatpassword"
+    password: bcrypt.hashSync("bigfatpassword", 10)
   },
  "123456": {
     id: "123456",
     email: "frankocean@wolfgang.com",
-    password: "whiteferrari"
+    password: bcrypt.hashSync("whiteferrari", 10)
   }
 }
 
@@ -44,9 +48,9 @@ app.get('/', (req, res) => {
 
 //**********************************************
 app.get("/urls/new", (req, res) => {
-  let loggedIn = req.cookies.user_ID;
+  let loggedIn = req.session.user_ID;
   if (loggedIn) {
-    let templateVars = {user_ID: req.cookies.user_ID}
+    let templateVars = {user_ID: req.session.user_ID}
     res.render("urls_new", templateVars);
   } else {
     errorMessage = "You must be logged in to access links!";
@@ -58,32 +62,33 @@ app.get('/urls/:id', (req, res) => {
   if (!urlDatabase[req.params.id]) {
     res.send("That short URL does not exist!");
     return;
-  } else if (!req.cookies.user_ID) {
-    errorMessage = "You must be logged in to access links!";
+  } else if (!req.session.user_ID) {
+    errorMessage = "You must be logged in to access those links!";
     res.redirect('/login');
     return;
   }
   let shortURL = req.params.id;
-  if (req.cookies.user_ID.id !== urlDatabase[shortURL]['user_ID']) {
+  if (req.session.user_ID.id !== urlDatabase[shortURL]['user_ID']) {
     res.redirect('/urls');
     return;
   }
 
   let fullURL = urlDatabase[shortURL].link;
-  let templateVars = {shortURL, fullURL, user_ID: req.cookies.user_ID};
+  let templateVars = {shortURL, fullURL, user_ID: req.session.user_ID};
   res.render('urls_show', templateVars);
 });
 
 app.get('/urls', (req, res) => {
-  let loggedIn = req.cookies.user_ID;
+  let loggedIn = req.session.user_ID;
   if (!loggedIn) {
     errorMessage = "You must be logged in to access links!";
     res.render('login', {errorMessage});
     return;
   } else {
-  let templateVars = {urlDatabase: urlDatabase, user_ID: req.cookies.user_ID};
-  res.render('urls_index', templateVars);
-}
+    let urls = urlsForUser(loggedIn.id)
+    let templateVars = {urls: urls, user_ID: req.session.user_ID};
+    res.render('urls_index', templateVars);
+  }
 });
 
 //***********************************************
@@ -106,13 +111,13 @@ app.get('/login', (req, res) => {
 //***********************************************
 app.post('/urls/:id/delete', (req, res) => {
   let deleteKey = req.params.id;
-  if (urlDatabase[deleteKey].user_ID === req.cookies.user_ID.id) {
+  if (urlDatabase[deleteKey].user_ID === req.session.user_ID.id) {
     delete urlDatabase[deleteKey];
     res.redirect('/urls');
   }
   else {
     errorMessage = "You may only delete links that you have added!";
-    let templateVars = {errorMessage, urlDatabase, user_ID: req.cookies.user_ID}
+    let templateVars = {errorMessage, urlDatabase, user_ID: req.session.user_ID}
     res.render('urls_index', templateVars);
   }
 });
@@ -127,30 +132,29 @@ app.post("/urls", (req, res) => {
   while (newKey === false) {
     generateRandomString();
   }
-  let newDataObj = {link: req.body.longURL, user_ID: req.cookies.user_ID.id};
+  let newDataObj = {link: req.body.longURL, user_ID: req.session.user_ID.id};
   urlDatabase[newKey] = newDataObj;
-  console.log(urlDatabase);
 
   res.redirect(`http://localhost:8080/urls/${newKey}`);
 
 });
 
 app.post('/login', (req, res) => {
-  let email = req.body.user_email;
-  let user_ID = findUserID(email);
-  let password = req.body.user_password;
-  if ((user_ID === 0) || (users[user_ID].password !== password)) {
+  const email = req.body.user_email;
+  const user_ID = findUserID(email);
+  if ((user_ID === 0) || !bcrypt.compareSync(req.body.user_password, users[user_ID].password)) {
     res.status(403);
     errorMessage = "Invalid login information. Please try again";
     res.render('login', {errorMessage: errorMessage});
     return;
+  } else {
+  req.session.user_ID = users[user_ID];
+  res.redirect('/urls');
   }
-  res.cookie('user_ID', users[user_ID]);
-  res.redirect('http://localhost:8080/');
 });
 
 app.post('/logout', (req, res) => {
-  res.clearCookie('user_ID');
+  req.session.user_ID = null;
   res.redirect('http://localhost:8080/login');
 });
 
@@ -174,9 +178,10 @@ app.post('/register', (req, res) => {
   while (newID === false) {
     generateRandomString();
   }
-  let newUser = {id: newID, email: req.body.email, password: req.body.password};
+  const hashedPassword = bcrypt.hashSync(req.body.password, 10);
+  let newUser = {id: newID, email: req.body.email, password: hashedPassword};
   users[newID] = newUser;
-  res.cookie('user_ID', users[newID]);
+  req.session.user_ID = users[newID];
   res.redirect('http://localhost:8080/urls');
 }
 })
@@ -216,3 +221,16 @@ function findUserID(email) {
   return 0;
 }
 
+
+
+
+function urlsForUser(id) {
+  let urls = {};
+  for (shortURL in urlDatabase) {
+    if (urlDatabase[shortURL].user_ID === id) {
+      let obj = {link: urlDatabase[shortURL].link, user_ID: id};
+      urls[shortURL] = obj;
+    }
+  }
+  return urls;
+}
