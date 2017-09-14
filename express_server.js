@@ -34,7 +34,13 @@ const users = {
 let errorMessage = undefined;
 
 app.get('/', (req, res) => {
-  res.end("Hello!");
+  let loggedIn = req.session.user_ID;
+  if (loggedIn) {
+    res.redirect('/urls');
+    return;
+  } else {
+    res.redirect('/login');
+  }
 });
 
 // app.get('/urls.json', (req, res) => {
@@ -63,13 +69,13 @@ app.get('/urls/:id', (req, res) => {
     res.send("That short URL does not exist!");
     return;
   } else if (!req.session.user_ID) {
-    errorMessage = "You must be logged in to access those links!";
+    errorMessage = "You must be logged in to access that link!";
     res.redirect('/login');
     return;
   }
   let shortURL = req.params.id;
   if (req.session.user_ID.id !== urlDatabase[shortURL]['user_ID']) {
-    res.redirect('/urls');
+    res.send("You are not authorized to access that link!");
     return;
   }
 
@@ -101,10 +107,20 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.get('/register', (req, res) => {
+  let loggedIn = req.session.user_ID;
+  if (loggedIn) {
+    res.redirect('/urls');
+    return;
+  }
   res.render('register', {errorMessage: errorMessage});
 });
 
 app.get('/login', (req, res) => {
+  let loggedIn = req.session.user_ID;
+  if (loggedIn) {
+    res.redirect('/urls');
+    return;
+  }
   res.render('login', {errorMessage: errorMessage});
 });
 
