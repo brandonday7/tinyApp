@@ -49,13 +49,18 @@ app.get("/urls/new", (req, res) => {
     let templateVars = {user_ID: req.cookies.user_ID}
     res.render("urls_new", templateVars);
   } else {
-    res.render('login');
+    errorMessage = "You must be logged in to access links!";
+    res.redirect('/login');
   }
 });
 
 app.get('/urls/:id', (req, res) => {
   if (!urlDatabase[req.params.id]) {
     res.send("That short URL does not exist!");
+    return;
+  } else if (!req.cookies.user_ID) {
+    errorMessage = "You must be logged in to access links!";
+    res.redirect('/login');
     return;
   }
   let shortURL = req.params.id;
@@ -70,11 +75,16 @@ app.get('/urls/:id', (req, res) => {
 });
 
 app.get('/urls', (req, res) => {
+  let loggedIn = req.cookies.user_ID;
+  if (!loggedIn) {
+    errorMessage = "You must be logged in to access links!";
+    res.render('login', {errorMessage});
+    return;
+  } else {
   let templateVars = {urlDatabase: urlDatabase, user_ID: req.cookies.user_ID};
   res.render('urls_index', templateVars);
+}
 });
-
-
 
 //***********************************************
 app.get("/u/:shortURL", (req, res) => {
@@ -131,7 +141,7 @@ app.post('/login', (req, res) => {
   let password = req.body.user_password;
   if ((user_ID === 0) || (users[user_ID].password !== password)) {
     res.status(403);
-    let errorMessage = "Invalid login information. Please try again";
+    errorMessage = "Invalid login information. Please try again";
     res.render('login', {errorMessage: errorMessage});
     return;
   }
