@@ -6,12 +6,12 @@
 <body>
   <h1>
     <form method="POST" action="/urls/<%=shortURL %>">
-      <%= shortURL %> : <%= fullURL; %>
+      <%= shortURL %> : <%= fullURL; %> <!-- show URL (long and short) -->
       <input id="newURL" type="text" name="newURL" placeholder="http://" style="width: 300px">
-      <button>Update</button>
+      <button>Update</button> <!-- POST updated link -->
     </form>
   </h1>
-  <a href="http://localhost:8080/urls/new">Shorten Your Own URL</a>
+  <a href="http://localhost:8080/urls/new">Shorten Your Own URL</a> <!-- link to add new URL -->
   <br>
-  <a href="http://localhost:8080/urls">My URLS</a>
+  <a href="http://localhost:8080/urls">My URLS</a> <!-- link back to URLs for convenience -->
 </body>

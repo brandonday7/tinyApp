@@ -4,18 +4,18 @@
   <% include ./partials/_header.ejs %>
 </head>
 <body>
-  <% if (typeof(errorMessage) !== 'undefined') { %>
+  <% if (typeof(errorMessage) !== 'undefined') { %> <!-- display error message, if any -->
     <h4><%= errorMessage %></h4>
     <% errorMessage = undefined; %>
   <% } %>
   <h3>
-    <% for (key in urls) { %>
-          <li><%= key %> : <%= urls[key].link; %></li>
+    <% for (key in urls) { %> <!-- go through all of the user's personal urls -->
+          <li><%= key %> : <%= urls[key].link; %></li> <!-- list them -->
           <form method="POST" action="/urls/<%= key %>/delete">
-          <button>Delete</button>
+          <button>Delete</button> <!-- give options to delete and edit -->
           <a href="http://localhost:8080/urls/<%= key %>">Edit</a>
       </form>
     <% } %>
   </h3>
-  <a href="http://localhost:8080/urls/new">Shorten Your Own URL</a>
+  <a href="http://localhost:8080/urls/new">Shorten Your Own URL</a> <!-- link to make new url -->
 </body>

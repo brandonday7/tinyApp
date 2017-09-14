@@ -1,9 +1,9 @@
 <h3>TinyURL Application</h3>
 <form action="/logout" method="POST">
-  <% if (typeof(user_ID) !== 'undefined') { %>
+  <% if (typeof(user_ID) !== 'undefined') { %> <!-- if there is a user signed in, display email and logout button -->
     <h4>Signed in as: <%= user_ID.email; %></h4>
     <button>Logout</button>
-  <% } else { %>
+  <% } else { %> <!-- if not signed in, give option to login/register -->
   <h4>Not logged in</h4>
   <p>Login <a href="./login">here</a></p>
   <p>Not a member? Register <a href="./register">here</a></p>
