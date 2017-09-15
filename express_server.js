@@ -13,6 +13,9 @@ let PORT = process.env.PORT || 8080;
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
 
+let methodOverride = require('method-override');
+app.use(methodOverride('X-HTTP-Method-Override'))
+
 let urlDatabase = {
   'b2xvn2': {link: 'http://www.lighthouselabs.ca', user_ID: 'abcdef'},
   '9sm5xk': {link: 'http://www.google.com', user_ID: '123456'}

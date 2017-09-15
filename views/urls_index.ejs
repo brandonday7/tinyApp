@@ -11,7 +11,7 @@
   <h3>
     <% for (key in urls) { %> <!-- go through all of the user's personal urls -->
           <li><%= key %> : <%= urls[key].link; %></li> <!-- list them -->
-          <form method="POST" action="/urls/<%= key %>/delete">
+          <form method="POST" action="/urls/<%= key %>/delete?_method=DELETE">
           <button>Delete</button> <!-- give options to delete and edit -->
           <a href="http://localhost:8080/urls/<%= key %>">Edit</a>
       </form>
