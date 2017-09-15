@@ -17,8 +17,8 @@ let methodOverride = require('method-override');
 app.use(methodOverride('X-HTTP-Method-Override'))
 
 let urlDatabase = {
-  'b2xvn2': {link: 'http://www.lighthouselabs.ca', user_ID: 'abcdef'},
-  '9sm5xk': {link: 'http://www.google.com', user_ID: '123456'}
+  'b2xvn2': {link: 'http://www.lighthouselabs.ca', user_ID: 'abcdef', visits: 0},
+  '9sm5xk': {link: 'http://www.google.com', user_ID: '123456', visits: 0}
 };
 
 const users = {
@@ -83,7 +83,8 @@ app.get('/urls/:id', (req, res) => {
   }
 
   let fullURL = urlDatabase[shortURL].link; //otherwise direct them to the url_show page with their cookie info/urls
-  let templateVars = {shortURL, fullURL, user_ID: req.session.user_ID};
+  let visits = urlDatabase[shortURL].visits;
+  let templateVars = {shortURL, fullURL, user_ID: req.session.user_ID, visits};
   res.render('urls_show', templateVars);
 });
 
@@ -105,6 +106,7 @@ app.get("/u/:shortURL", (req, res) => { //anyone can do this, no need to tell if
   if (!urlDatabase[req.params.shortURL]) { //if database doesn't recognize the link, let the user know
     res.send("That short URL does not exist!");
   }
+  urlDatabase[req.params.shortURL].visits++;
   let longURL = urlDatabase[req.params.shortURL].link; //otherwise, redirect to the desired page
   res.redirect(longURL);
 });
