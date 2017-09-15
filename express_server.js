@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 let cookieSession = require('cookie-session');
 app.use(cookieSession({
   name: 'session',
-  keys: ['user_ID'] //this is the name of that encrypted cookie that will be used
+  keys: ['user_ID', 'visitor'] //this is the name of that encrypted cookie that will be used
 }));
 const bcrypt = require('bcrypt');
 
@@ -84,7 +84,10 @@ app.get('/urls/:id', (req, res) => {
 
   let fullURL = urlDatabase[shortURL].link; //otherwise direct them to the url_show page with their cookie info/urls
   let visits = urlDatabase[shortURL].visits;
-  let templateVars = {shortURL, fullURL, user_ID: req.session.user_ID, visits};
+  //if visitor cookie is not empty, fire it to the urls_show page, if not, send something with length 0;
+  let visitors = req.session.visitor ? req.session.visitor : [];
+  visitors = Object.keys(visitors).length;
+  let templateVars = {shortURL, fullURL, user_ID: req.session.user_ID, visitors, visits};
   res.render('urls_show', templateVars);
 });
 
@@ -106,6 +109,28 @@ app.get("/u/:shortURL", (req, res) => { //anyone can do this, no need to tell if
   if (!urlDatabase[req.params.shortURL]) { //if database doesn't recognize the link, let the user know
     res.send("That short URL does not exist!");
   }
+
+  let cookieObj = generateRandomString();
+  if (req.session.user_ID !== null) {
+    cookieObj = req.session.user_ID.id;
+  }
+
+
+  //this is where my problem is with adding another cookie
+  //if the visitor cookie has been defined, concatenate it with the current user, otherwise, we are in the
+  //first definition of the visitor cookie, and we set it eqaul to the current user
+  // req.session.visitor = req.session.visitor ?  req.session.visitor.concat(cookieObj) : [cookieObj];
+
+//don't forget to give anyone access to u/ pages, therefore generate a new id for each of them
+
+  if (typeof(req.session.visitor) === 'undefined') {
+    let obj = {[cookieObj]: cookieObj};
+    req.session.visitor = obj;
+  } else if (!req.session.visitor[cookieObj]) {
+    req.session.visitor[cookieObj] = cookieObj;
+  }
+
+
   urlDatabase[req.params.shortURL].visits++;
   let longURL = urlDatabase[req.params.shortURL].link; //otherwise, redirect to the desired page
   res.redirect(longURL);
@@ -169,7 +194,7 @@ app.post('/login', (req, res) => {
     res.render('login', {errorMessage: errorMessage}); //send error message to .ejs to be printed
     return;
   } else {
-  req.session.user_ID = users[user_ID]; //if correct information is input, log in and show them url page
+  req.session.user_ID = users[user_ID]; //if correct information is input, log in and show them url
   res.redirect('/urls');
   }
 });
